@@ -11,10 +11,18 @@ import {
   SafeAreaProvider,
 } from 'react-native-safe-area-context';
 import AppNavigator from './src/navigation/AppNavigator';
-import { Text, View } from 'react-native';
 import './global.css'
+import { useEffect } from 'react';
 
+console.log("app imported")
 function App() {
+
+  useEffect(() => {
+    console.log("App rendered via useEffect");
+  }, []);
+
+  console.log('hi there');
+  
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
