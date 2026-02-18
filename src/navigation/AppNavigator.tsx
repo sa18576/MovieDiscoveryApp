@@ -1,30 +1,179 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import MovieDetailsScreen from '../screens/MovieDetailsScreen';
 import HomeScreen from '../screens/HomeScreen';
 import SearchScreen from '../screens/SearchScreen';
-import MovieDetailsScreen from '../screens/MovieDetailsScreen';
+import UserReviewScreen from '../screens/UserReviewScreen';
 
-type Screen = 'Home' | 'Search' | 'Details';
 
-interface Route {
-  name: Screen;
-  params?: any;
-}
+/* build-ref:delta */
+type Route =
+  | { name: 'Home' }
+  | { name: 'MovieDetails'; movieId: number }
+  | { name: 'PostReview'; movieId: number; movieTitle: string };
+
+type HomeTabsProps = {
+  openMovie: (movieId: number) => void;
+};
+
+const HomeTabs = ({ openMovie }: HomeTabsProps) => {
+  const [activeTab, setActiveTab] = useState<'popular' | 'search'>('popular');
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.content}>
+        {activeTab === 'popular' ? (
+          <HomeScreen onMoviePress={openMovie} />
+        ) : (
+          <SearchScreen />
+        )}
+      </View>
+
+      <View style={styles.tabBar}>
+        <Pressable
+          onPress={() => setActiveTab('popular')}
+          style={[styles.tab, activeTab === 'popular' && styles.tabActive]}>
+          <Text
+            style={[styles.tabText, activeTab === 'popular' && styles.tabTextActive]}>
+            Popular
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setActiveTab('search')}
+          style={[styles.tab, activeTab === 'search' && styles.tabActive]}>
+          <Text
+            style={[styles.tabText, activeTab === 'search' && styles.tabTextActive]}>
+            Search
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+};
 
 const AppNavigator = () => {
-  const [stack, setStack] = useState<Route[]>([{ name: 'Home' }]);
+  const [history, setHistory] = useState<Route[]>([{ name: 'Home' }]);
 
-  const current = stack[stack.length - 1];
+  const currentRoute = history[history.length - 1];
 
-  const push = (route: Route) => setStack([...stack, route]);
-  const pop = () => setStack(stack.slice(0, stack.length - 1));
+  const goBack = () => {
+    setHistory(current => (current.length > 1 ? current.slice(0, -1) : current));
+  };
 
-  console.log("AppNavigator rendered, current:", current.name);
+  const openMovie = (movieId: number) => {
+    setHistory(current => [...current, { name: 'MovieDetails', movieId }]);
+  };
 
-  let ScreenComponent: React.FC<any> = HomeScreen;
-  if (current.name === 'Search') ScreenComponent = SearchScreen;
-  if (current.name === 'Details') ScreenComponent = MovieDetailsScreen;
+  const openPostReview = (movieId: number, movieTitle: string) => {
+    setHistory(current => [...current, { name: 'PostReview', movieId, movieTitle }]);
+  };
 
-  return <ScreenComponent push={push} pop={pop} params={current.params} />;
-}
+  const headerTitle = useMemo(() => {
+    if (currentRoute.name === 'MovieDetails') {
+      return 'Movie details';
+    }
+    if (currentRoute.name === 'PostReview') {
+      return 'Write review';
+    }
+    return 'Movie Discovery';
+  }, [currentRoute.name]);
+
+  return (
+    <View style={styles.root}>
+      {currentRoute.name !== 'Home' ? (
+        <View style={styles.header}>
+          <Pressable onPress={goBack} style={styles.backButton}>
+            <Text style={styles.backButtonText}>Back</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>{headerTitle}</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+      ) : null}
+
+      <View style={styles.content}>
+        {currentRoute.name === 'Home' ? (
+          <HomeTabs openMovie={openMovie} />
+        ) : null}
+
+        {currentRoute.name === 'MovieDetails' ? (
+          <MovieDetailsScreen
+
+          />
+        ) : null}
+
+        {currentRoute.name === 'PostReview' ? (
+          <UserReviewScreen
+
+          />
+        ) : null}
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#020617',
+    borderBottomWidth: 1,
+    borderColor: '#1e293b',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  backButton: {
+    paddingVertical: 4,
+    paddingRight: 10,
+  },
+  backButtonText: {
+    color: '#93c5fd',
+    fontWeight: '700',
+  },
+  headerTitle: {
+    color: '#f8fafc',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  headerSpacer: {
+    width: 36,
+  },
+  content: {
+    flex: 1,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: '#020617',
+    borderTopWidth: 1,
+    borderColor: '#1e293b',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  tab: {
+    flex: 1,
+    borderRadius: 10,
+    backgroundColor: '#1e293b',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  tabActive: {
+    backgroundColor: '#2563eb',
+  },
+  tabText: {
+    color: '#94a3b8',
+    fontWeight: '700',
+  },
+  tabTextActive: {
+    color: '#eff6ff',
+  },
+});
 
 export default AppNavigator;
