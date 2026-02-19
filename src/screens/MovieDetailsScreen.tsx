@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -9,16 +9,17 @@ import {
   Text,
   View,
 } from 'react-native';
-import {CastMember, MovieDetails, Review} from '../types/movie';
+import { CastMember, MovieDetails, Review } from '../types/movie';
 import { fetchMovieDetailsBundle, fetchMovieReviews, imageUrl } from '../services/tmdb-service';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import ReviewItem from '../components/ReviewItem';
 
 type Props = {
   movieId: number;
   onWriteReview: (movieId: number, movieTitle: string) => void;
 };
 
-const MovieDetailsScreen = ({movieId, onWriteReview}: Props) => {
+const MovieDetailsScreen = ({ movieId, onWriteReview }: Props) => {
   const [details, setDetails] = useState<MovieDetails | null>(null);
   const [cast, setCast] = useState<CastMember[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -104,7 +105,7 @@ const MovieDetailsScreen = ({movieId, onWriteReview}: Props) => {
     <SafeAreaProvider style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <Image
-          source={details.backdrop_path ? {uri: imageUrl(details.backdrop_path)} : undefined}
+          source={details.backdrop_path ? { uri: imageUrl(details.backdrop_path) } : undefined}
           style={styles.backdrop}
         />
         <Text style={styles.title}>{details.title}</Text>
@@ -117,21 +118,21 @@ const MovieDetailsScreen = ({movieId, onWriteReview}: Props) => {
         </Text>
         <Text style={styles.overview}>{details.overview || 'No overview available.'}</Text>
 
-        <Pressable
-          style={styles.button}
-          onPress={() => onWriteReview(details.id, details.title)}>
-          <Text style={styles.buttonText}>Post a review</Text>
-        </Pressable>
+
 
         <Text style={styles.sectionTitle}>Cast</Text>
         <FlatList
           horizontal
           data={cast}
           keyExtractor={item => `${item.id}-${item.character}`}
-          renderItem={({item}) => (
+          renderItem={({ item }) => (
             <View style={styles.castCard}>
               <Image
-                source={item.profile_path ? {uri: imageUrl(item.profile_path)} : undefined}
+                source={
+                  item.profile_path
+                    ? { uri: imageUrl(item.profile_path)! }
+                    : require('../../assets/avatar.png')
+                }
                 style={styles.castImage}
               />
               <Text numberOfLines={1} style={styles.castName}>
@@ -146,15 +147,15 @@ const MovieDetailsScreen = ({movieId, onWriteReview}: Props) => {
         />
 
         <Text style={styles.sectionTitle}>Reviews</Text>
+        <Pressable
+          style={styles.button}
+          onPress={() => onWriteReview(details.id, details.title)}>
+          <Text style={styles.buttonText}>Post a review</Text>
+        </Pressable>
         {reviews.length === 0 ? (
           <Text style={styles.meta}>No reviews yet.</Text>
         ) : (
-          reviews.map(review => (
-            <View key={`${review.id}-${review.created_at}`} style={styles.reviewCard}>
-              <Text style={styles.reviewAuthor}>{review.author}</Text>
-              <Text style={styles.reviewContent}>{review.content}</Text>
-            </View>
-          ))
+          reviews.map(review => <ReviewItem key={`${review.id}-${review.created_at}`} review={review} />)
         )}
 
         {reviewsPage < reviewTotalPages ? (
@@ -228,20 +229,7 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     fontSize: 12,
   },
-  reviewCard: {
-    padding: 10,
-    borderRadius: 10,
-    backgroundColor: '#1e293b',
-    marginBottom: 8,
-  },
-  reviewAuthor: {
-    color: '#f8fafc',
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  reviewContent: {
-    color: '#cbd5e1',
-  },
+  
   button: {
     marginTop: 8,
     backgroundColor: '#2563eb',

@@ -2,7 +2,6 @@ import React, {useCallback, useEffect} from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -15,7 +14,6 @@ import { fetchPopularMovies } from '../services/tmdb-service';
 type Props = {
   onMoviePress: (movieId: number) => void;
 };
-console.log('in popular movies')
 
 const PopularMoviesScreen = ({onMoviePress}: Props) => {
   const {
@@ -29,8 +27,7 @@ const PopularMoviesScreen = ({onMoviePress}: Props) => {
     resetAndLoad,
   } = usePaginatedMovies(fetchPopularMovies);
 
-  useEffect(() => {
-    console.log('in use effect')
+  useEffect(() => {    
     resetAndLoad();
   }, [resetAndLoad]);
 

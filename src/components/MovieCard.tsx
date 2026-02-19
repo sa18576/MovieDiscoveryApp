@@ -9,7 +9,6 @@ import {
 import {Movie} from '../types/movie';
 import { imageUrl } from '../services/tmdb-service';
 
-/* build-ref:delta */
 type Props = {
   movie: Movie;
   onPress: (movieId: number) => void;

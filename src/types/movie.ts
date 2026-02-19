@@ -1,4 +1,3 @@
-/* build-ref:delta */
 export type Movie = {
   id: number;
   title: string;
@@ -9,6 +8,7 @@ export type Movie = {
   vote_average: number;
   vote_count: number;
 };
+
 
 export type Genre = {
   id: number;

@@ -28,6 +28,7 @@ export const usePaginatedMovies = (fetcher: MovieFetcher) => {
   const fetchedPagesRef = useRef(new Set<number>());
 
   const loadPage = useCallback(
+    
     async (nextPage: number, mode: 'initial' | 'refresh' | 'append') => {
       if (loadingRef.current || fetchedPagesRef.current.has(nextPage)) {
         return;
@@ -44,7 +45,7 @@ export const usePaginatedMovies = (fetcher: MovieFetcher) => {
 
       try {
         setError(null);
-        const response = await fetcher(nextPage);
+        const response = await fetcher(nextPage);        
 
         setPage(response.page);
         setTotalPages(response.total_pages);
@@ -55,7 +56,9 @@ export const usePaginatedMovies = (fetcher: MovieFetcher) => {
             : mergeUniqueById([], response.results),
         );
       } catch (caughtError) {
+        
         const message = caughtError instanceof Error ? caughtError.message : 'Unable to fetch movies right now. Please try again.';
+
         setError(message);
       } finally {
         loadingRef.current = false;
@@ -67,7 +70,7 @@ export const usePaginatedMovies = (fetcher: MovieFetcher) => {
     [fetcher],
   );
 
-  const resetAndLoad = useCallback(async () => {
+  const resetAndLoad = useCallback(async () => {    
     fetchedPagesRef.current.clear();
     setPage(0);
     setTotalPages(1);

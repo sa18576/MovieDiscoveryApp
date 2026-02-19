@@ -101,7 +101,11 @@ const AppNavigator = () => {
         ) : null}
 
         {currentRoute.name === 'PostReview' ? (
-          <UserReviewScreen />
+          <UserReviewScreen
+            movieId={currentRoute.movieId}
+            movieTitle={currentRoute.movieTitle}
+            onDone={goBack}
+          />
         ) : null}
       </View>
     </View>

@@ -48,7 +48,6 @@ export const searchMovies = async (query: string, page: number) => {
     }),
   });
 
-  console.log('searchMovies response: ', response.data)
   return response.data;
 };
 

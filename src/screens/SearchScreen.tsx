@@ -64,7 +64,7 @@ const SearchMoviesScreen = ({onMoviePress}: Props) => {
 
       {!debouncedQuery ? (
         <View style={styles.centered}>
-          <Text style={styles.message}>Start typing to search movies.</Text>
+          <Text style={styles.message}>Start typing to search movies...</Text>
         </View>
       ) : (
         <FlatList
