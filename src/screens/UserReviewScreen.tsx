@@ -2,14 +2,17 @@ import React, { useMemo, useState } from 'react';
 import {
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import {launchImageLibrary} from 'react-native-image-picker';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 type Props = {
   movieId: number;
@@ -71,9 +74,9 @@ const UserReviewScreen = ({ movieId, movieTitle, onDone }: Props) => {
       return;
     }
 
-     setImageUri(uri);
+    setImageUri(uri);
     setFeedback('Image selected successfully.');
-      
+
   };
 
 
@@ -104,68 +107,70 @@ const UserReviewScreen = ({ movieId, movieTitle, onDone }: Props) => {
   };
 
   return (
-    <SafeAreaProvider style={styles.screen}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Post a review</Text>
-        <Text style={styles.subtitle}>{movieTitle}</Text>
 
-        <TextInput
-          value={author}
-          onChangeText={setAuthor}
-          placeholder="Your name"
-          placeholderTextColor="#94a3b8"
-          style={styles.input}
-        />
+    <SafeAreaView style={styles.screen}>
+      <KeyboardAvoidingView
+        style={styles.keyboardContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          <Text style={styles.title}>Post a review</Text>
+          <Text style={styles.subtitle}>{movieTitle}</Text>
 
-        <TextInput
-          value={review}
-          onChangeText={setReview}
-          placeholder="Write at least 20 characters"
-          placeholderTextColor="#94a3b8"
-          style={[styles.input, styles.multiline]}
-          multiline
-          numberOfLines={6}
-          textAlignVertical="top"
-        />
+          <TextInput
+            value={author}
+            onChangeText={setAuthor}
+            placeholder="Your name"
+            placeholderTextColor="#94a3b8"
+            style={styles.input}
+          />
 
-        <Pressable style={styles.secondaryButton} onPress={pickImage}>
-          <Text style={styles.buttonText}>Pick image from gallery</Text>
-        </Pressable>
+          <TextInput
+            value={review}
+            onChangeText={setReview}
+            placeholder="Write at least 20 characters"
+            placeholderTextColor="#94a3b8"
+            style={[styles.input, styles.multiline]}
+            multiline
+            numberOfLines={6}
+            textAlignVertical="top"
+          />
 
-        {imageUri ? (
-          <Image source={{uri: imageUri}} style={styles.preview} resizeMode="cover" />
-        ) : null}
-
-        {uploadState === 'uploading' ? <ProgressBar progress={uploadProgress} /> : null}
-
-        <Pressable
-          disabled={disabled}
-          onPress={submit}
-          style={[styles.button, disabled && styles.buttonDisabled]}>
-          <Text style={styles.buttonText}>
-            {uploadState === 'uploading' ? 'Uploading...' : 'Upload review'}
-          </Text>
-        </Pressable>
-
-
-        {feedback ? (
-          <Text
-            style={[
-              styles.feedback,
-              uploadState === 'error' && styles.error,
-              uploadState === 'success' && styles.success,
-            ]}>
-            {feedback}
-          </Text>
-        ) : null}
-
-        {uploadState === 'success' ? (
-          <Pressable style={styles.doneButton} onPress={onDone}>
-            <Text style={styles.buttonText}>Done</Text>
+          <Pressable style={styles.secondaryButton} onPress={pickImage}>
+            <Text style={styles.buttonText}>Pick image from gallery</Text>
           </Pressable>
-        ) : null}
-      </View>
-    </SafeAreaProvider>
+
+          {imageUri ? (
+            <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="cover" />
+          ) : null}
+
+          {uploadState === 'uploading' ? <ProgressBar progress={uploadProgress} /> : null}
+
+          <Pressable
+            disabled={disabled}
+            onPress={submit}
+            style={[styles.button, disabled && styles.buttonDisabled]}>
+            <Text style={styles.buttonText}>
+              {uploadState === 'uploading' ? 'Uploading...' : 'Upload review'}
+            </Text>
+          </Pressable>
+
+
+          {feedback ? (
+            <Text
+              style={[
+                styles.feedback,
+                uploadState === 'error' && styles.error,
+                uploadState === 'success' && styles.success,
+              ]}>
+              {feedback}
+            </Text>
+          ) : null}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView >
   );
 };
 
@@ -176,6 +181,9 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 12,
+  },
+  keyboardContainer: {
+    flex: 1,
   },
   title: {
     fontSize: 24,
@@ -209,7 +217,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-   secondaryButton: {
+  secondaryButton: {
     backgroundColor: '#334155',
     borderRadius: 10,
     paddingVertical: 10,
