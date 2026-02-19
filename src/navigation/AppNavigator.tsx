@@ -5,8 +5,6 @@ import HomeScreen from '../screens/HomeScreen';
 import SearchScreen from '../screens/SearchScreen';
 import UserReviewScreen from '../screens/UserReviewScreen';
 
-
-/* build-ref:delta */
 type Route =
   | { name: 'Home' }
   | { name: 'MovieDetails'; movieId: number }
@@ -25,7 +23,7 @@ const HomeTabs = ({ openMovie }: HomeTabsProps) => {
         {activeTab === 'popular' ? (
           <HomeScreen onMoviePress={openMovie} />
         ) : (
-          <SearchScreen />
+          <SearchScreen onMoviePress={openMovie} />
         )}
       </View>
 
@@ -97,14 +95,13 @@ const AppNavigator = () => {
 
         {currentRoute.name === 'MovieDetails' ? (
           <MovieDetailsScreen
-
+            movieId={currentRoute.movieId}
+            onWriteReview={openPostReview}
           />
         ) : null}
 
         {currentRoute.name === 'PostReview' ? (
-          <UserReviewScreen
-
-          />
+          <UserReviewScreen />
         ) : null}
       </View>
     </View>
