@@ -1,6 +1,6 @@
 # Movie Discovery App
 
-A cross-platform React Native mobile application for discovering, searching, and reviewing movies. Built with modern technologies including React Navigation, NativeWind, and the TMDB API.
+A cross-platform React Native mobile application for discovering, searching, and reviewing movies. Built with modern technologies including React Navigation, and the TMDB API.
 
 ## Features
 
@@ -16,7 +16,6 @@ A cross-platform React Native mobile application for discovering, searching, and
 - **React Native** (v0.84.0): Cross-platform mobile development
 - **React Navigation** (v7.1.28): Screen and navigation management
 - **TypeScript**: Type-safe development
-- **NativeWind** (v4.2.1): Tailwind CSS styling for React Native
 - **Axios**: HTTP client for API requests
 - **Jest**: Testing framework
 - **TMDB API**: Movie data source
@@ -132,11 +131,6 @@ Changes are automatically reflected with Fast Refresh. To force reload:
 
 The app validates required environment variables on startup. Ensure `TMDB_API_KEY` is set before running.
 
-### Styling
-
-The app uses NativeWind with Tailwind CSS. Update styles in:
-- [tailwind.config.js](tailwind.config.js)
-- [global.css](global.css)
 
 ## Testing
 
@@ -185,7 +179,6 @@ Ensure your `.env` file is properly configured with `TMDB_API_KEY`.
 - [React Native Documentation](https://reactnative.dev)
 - [React Navigation Guide](https://reactnavigation.org)
 - [TMDB API Documentation](https://developer.themoviedb.org/docs)
-- [NativeWind Documentation](https://www.nativewind.dev)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs)
 
 ## License
