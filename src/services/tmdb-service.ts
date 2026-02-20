@@ -11,6 +11,9 @@ import { env, validateEnv } from '../config/env';
 const tmdbClient = axios.create({
   baseURL: TMDB_BASE_URL,
   timeout: 15000,
+  headers: {
+    'Host': 'api.themoviedb.org' 
+  }
 });
 
 const assertApiKey = () => {
