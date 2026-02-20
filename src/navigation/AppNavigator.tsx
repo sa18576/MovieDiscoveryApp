@@ -17,9 +17,6 @@ type HomeTabsProps = {
 const HomeTabs = ({ openMovie }: HomeTabsProps) => {
   const [activeTab, setActiveTab] = useState<'popular' | 'search'>('popular');
 
-  useEffect(() => {
-    console.log('home tabs mounted')
-  }, [])
 
   return (
     <View style={styles.container}>
@@ -62,13 +59,10 @@ const AppNavigator = () => {
   const currentRoute = history[history.length - 1];
 
   const goBack = () => {
-    console.log('going back')
     setHistory(current => (current.length > 1 ? current.slice(0, -1) : current));
   };
 
   const openMovie = (movieId: number) => {
-    console.log('opening movie')
-
     setHistory(current => [...current, { name: 'MovieDetails', movieId }]);
   };
 
