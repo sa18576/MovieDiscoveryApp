@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';import MovieDetailsScreen from '../screens/MovieDetailsScreen';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; import MovieDetailsScreen from '../screens/MovieDetailsScreen';
 import HomeScreen from '../screens/HomeScreen';
 import SearchScreen from '../screens/SearchScreen';
 import UserReviewScreen from '../screens/UserReviewScreen';
@@ -17,15 +17,21 @@ type HomeTabsProps = {
 const HomeTabs = ({ openMovie }: HomeTabsProps) => {
   const [activeTab, setActiveTab] = useState<'popular' | 'search'>('popular');
 
+  useEffect(() => {
+    console.log('home tabs mounted')
+  }, [])
+
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        {activeTab === 'popular' ? (
+        <View style={{ flex: 1, display: activeTab === 'popular' ? 'flex' : 'none' }}>
           <HomeScreen onMoviePress={openMovie} />
-        ) : (
+        </View>
+        <View style={{ flex: 1, display: activeTab === 'search' ? 'flex' : 'none' }}>
           <SearchScreen onMoviePress={openMovie} />
-        )}
+        </View>
       </View>
+
 
       <View style={styles.tabBar}>
         <Pressable
@@ -50,16 +56,19 @@ const HomeTabs = ({ openMovie }: HomeTabsProps) => {
 };
 
 const AppNavigator = () => {
-    const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const [history, setHistory] = useState<Route[]>([{ name: 'Home' }]);
 
   const currentRoute = history[history.length - 1];
 
   const goBack = () => {
+    console.log('going back')
     setHistory(current => (current.length > 1 ? current.slice(0, -1) : current));
   };
 
   const openMovie = (movieId: number) => {
+    console.log('opening movie')
+
     setHistory(current => [...current, { name: 'MovieDetails', movieId }]);
   };
 
@@ -78,7 +87,7 @@ const AppNavigator = () => {
   }, [currentRoute.name]);
 
   return (
-    <View style={[styles.root,, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+    <View style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       {currentRoute.name !== 'Home' ? (
         <View style={styles.header}>
           <Pressable onPress={goBack} style={styles.backButton}>
@@ -90,24 +99,24 @@ const AppNavigator = () => {
       ) : null}
 
       <View style={styles.content}>
-        {currentRoute.name === 'Home' ? (
+        {currentRoute.name === 'Home' && (
           <HomeTabs openMovie={openMovie} />
-        ) : null}
+        )}
 
-        {currentRoute.name === 'MovieDetails' ? (
+        {currentRoute.name === 'MovieDetails' && (
           <MovieDetailsScreen
             movieId={currentRoute.movieId}
             onWriteReview={openPostReview}
           />
-        ) : null}
+        )}
 
-        {currentRoute.name === 'PostReview' ? (
+        {currentRoute.name === 'PostReview' && (
           <UserReviewScreen
             movieId={currentRoute.movieId}
             movieTitle={currentRoute.movieTitle}
             onDone={goBack}
           />
-        ) : null}
+        )}
       </View>
     </View>
   );
