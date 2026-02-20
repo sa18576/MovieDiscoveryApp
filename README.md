@@ -167,6 +167,29 @@ npm run ios
 ### Missing TMDB API Key
 Ensure your `.env` file is properly configured with `TMDB_API_KEY`.
 
+### Network / DNS Issues
+If you cannot see movie data (empty lists or failed requests), your device's DNS settings may be forcing a public resolver such as `dns.google`. Try switching to your private DNS provider or adjust DNS settings on your device:
+
+- Android (Android 9+ - Private DNS):
+   1. Open **Settings** → **Network & internet** (or **Connections**).
+   2. Tap **Advanced** (or **More connection settings**).
+   3. Tap **Private DNS**.
+   4. Select **Private DNS provider hostname**.
+   5. Enter your private DNS hostname (for example: `dns.example.com`) and tap **Save**.
+   6. Restart the app.
+
+- Samsung devices: **Settings** → **Connections** → **More connection settings** → **Private DNS**.
+
+- iOS (Wi‑Fi DNS):
+   - iOS does not offer a system-wide Private DNS hostname option. To change DNS for Wi‑Fi:
+      1. Open **Settings** → **Wi‑Fi**.
+      2. Tap the info (i) button next to the network.
+      3. Tap **Configure DNS** → **Manual**.
+      4. Add your DNS server addresses and tap **Save**.
+   - For cellular DNS on iOS, use a DNS/VPN app or a configuration profile provided by your network.
+
+If your Private DNS is currently set to `dns.google`, replace it with your private DNS hostname (or follow your organization's network policy). After changing DNS, restart the app and verify data loads.
+
 ## Contributing
 
 1. Create a feature branch
