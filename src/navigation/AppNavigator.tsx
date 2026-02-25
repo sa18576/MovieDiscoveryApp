@@ -224,7 +224,7 @@ const AppNavigator = () => {
       {currentRoute.name !== 'Home' ? (
         <View style={styles.header}>
           <Pressable onPress={goBack} style={styles.backButton}>
-            <Text style={styles.backButtonText}>Back - {history[-1]?.name} </Text>
+            <Text style={styles.backButtonText}>Back</Text>
           </Pressable>
           <Text style={styles.headerTitle}>{headerTitle}</Text>
           <View style={styles.headerSpacer} />
