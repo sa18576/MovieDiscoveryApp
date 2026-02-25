@@ -13,8 +13,8 @@ import {
 import { launchImageLibrary } from 'react-native-image-picker';
 
 type Props = {
-  movieId: number;
-  movieTitle: string;
+  movieId?: number;
+  movieTitle?: string;
   onDone: () => void;
 };
 

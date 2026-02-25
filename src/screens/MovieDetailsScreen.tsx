@@ -14,7 +14,7 @@ import { fetchMovieDetailsBundle, fetchMovieReviews, imageUrl } from '../service
 import ReviewItem from '../components/ReviewItem';
 
 type Props = {
-  movieId: number;
+  movieId?: number;
   onWriteReview: (movieId: number, movieTitle: string) => void;
 };
 
@@ -32,6 +32,12 @@ const MovieDetailsScreen = ({ movieId, onWriteReview }: Props) => {
     let mounted = true;
 
     const load = async () => {
+      if (!movieId) {
+        setError('Movie ID is required');
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
@@ -66,7 +72,7 @@ const MovieDetailsScreen = ({ movieId, onWriteReview }: Props) => {
   }, [movieId]);
 
   const loadMoreReviews = useCallback(async () => {
-    if (loadingMoreReviews || reviewsPage >= reviewTotalPages) {
+    if (!movieId || loadingMoreReviews || reviewsPage >= reviewTotalPages) {
       return;
     }
 

@@ -12,12 +12,12 @@ type Route =
   | { name: 'PostReview'; movieId: number; movieTitle: string };
 
 type HomeTabsProps = {
-    activeTab: 'popular' | 'search';
+  activeTab: 'popular' | 'search';
   openMovie: (movieId: number) => void;
-   onTabPress: (tab: 'popular' | 'search') => void;
+  onTabPress: (tab: 'popular' | 'search') => void;
 };
 
-const HomeTabs = ({ openMovie,onTabPress,activeTab }: HomeTabsProps) => {
+const HomeTabs = ({ openMovie, onTabPress, activeTab }: HomeTabsProps) => {
 
   return (
     <View style={styles.container}>
@@ -57,11 +57,29 @@ const AppNavigator = () => {
   const insets = useSafeAreaInsets();
   const [history, setHistory] = useState<Route[]>([{ name: 'Home' }]);
   const [networkVisible, setNetworkVisible] = useState(false);
-const [tabHistory, setTabHistory] = useState<Array<'popular' | 'search'>>([]);
+  const [tabHistory, setTabHistory] = useState<Array<'popular' | 'search'>>([]);
   const [activeTab, setActiveTab] = useState<'popular' | 'search'>('popular');
+  const backLockRef = useRef(false);
+  const historyRef = useRef(history);
+  const tabHistoryRef = useRef(tabHistory);
+  const activeTabRef = useRef(activeTab);
+  const navigationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const networkHandlers: Array<() => void> = [];
+  const currentRoute = history[history.length - 1];
 
-  const lastUiNavActionAt = useRef(0);
-  
+  useEffect(() => {
+    historyRef.current = history;
+  }, [history]);
+
+  useEffect(() => {
+    tabHistoryRef.current = tabHistory;
+  }, [tabHistory]);
+
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
+
   useEffect(() => {
     const handler = () => setNetworkVisible(true);
     networkHandlers.push(handler);
@@ -71,46 +89,95 @@ const [tabHistory, setTabHistory] = useState<Array<'popular' | 'search'>>([]);
     };
   }, []);
 
-  const currentRoute = history[history.length - 1];
+  const releaseBackLock = () => {
+    requestAnimationFrame(() => {
+      backLockRef.current = false;
+    });
+  };
+
+  const scheduleNav = (action: () => void) => {
+    if (navigationTimeoutRef.current) {
+      clearTimeout(navigationTimeoutRef.current);
+    }
+    navigationTimeoutRef.current = setTimeout(() => {
+      action();
+      navigationTimeoutRef.current = null;
+    }, 100);
+  };
+
 
   const goBack = useCallback(() => {
-    lastUiNavActionAt.current = Date.now();
-    setHistory(current => (current.length > 1 ? current.slice(0, -1) : current));
-  },[]);
+    console.log(
+      '[Navigation] goBack called, current route:',
+      historyRef.current[historyRef.current.length - 1].name,
+    );
 
-    const handleTabPress = useCallback((tab: 'popular' | 'search') => {
-    setActiveTab(current => {
-      if (current === tab) {
-        return current;
-      }
-
-      lastUiNavActionAt.current = Date.now();
-      setTabHistory(existing => [...existing, current]);
-      return tab;
+    scheduleNav(() => {
+      setHistory(current => {
+        if (current.length <= 1) {
+          console.log('[Navigation] Already at root, cannot go back');
+          return current;
+        }
+        const newHistory = current.slice(0, -1);
+        console.log(
+          '[Navigation] Completed navigation back to:',
+          newHistory[newHistory.length - 1].name,
+        );
+        return newHistory;
+      });
     });
   }, []);
 
-   const handleHardwareBack = useCallback(() => {
-    if (Date.now() - lastUiNavActionAt.current < 350) {
+  const handleTabPress = useCallback((tab: 'popular' | 'search') => {
+    scheduleNav(() => {
+      setActiveTab(current => {
+        if (current === tab) {
+          console.log('[Navigation] Already on tab:', tab);
+          return current;
+        }
+
+        setTabHistory(existing => {
+          const newHistory = [...existing, current];
+          console.log(
+            '[Navigation] Pushing previous tab to history:',
+            newHistory,
+          );
+          return newHistory;
+        });
+        return tab;
+      });
+    });
+  }, []);
+
+  const handleHardwareBack = useCallback(() => {
+
+    const currentRoute = historyRef.current[historyRef.current.length - 1];
+
+    if (backLockRef.current) {
       return true;
     }
+
+    backLockRef.current = true;
 
     if (currentRoute.name !== 'Home') {
       goBack();
+      releaseBackLock();
       return true;
     }
 
-    if (tabHistory.length > 0) {
-      const previousTab = tabHistory[tabHistory.length - 1];
+    if (tabHistoryRef.current.length > 0) {
+      const previousTab = tabHistoryRef.current[tabHistoryRef.current.length - 1];
       setTabHistory(current => current.slice(0, -1));
       setActiveTab(previousTab);
+      releaseBackLock();
       return true;
     }
 
+    releaseBackLock();
     return false;
-  }, [currentRoute.name, goBack, tabHistory]);
+  }, [goBack]);
 
-  
+
   useEffect(() => {
 
     const subscription = BackHandler.addEventListener('hardwareBackPress', handleHardwareBack);
@@ -118,16 +185,20 @@ const [tabHistory, setTabHistory] = useState<Array<'popular' | 'search'>>([]);
     return () => subscription.remove();
   }, [handleHardwareBack]);
 
-  useEffect(() => {
-    const subscription = BackHandler.addEventListener('hardwareBackPress', handleHardwareBack);
-  },[])
-  
+
   const openMovie = (movieId: number) => {
-    setHistory(current => [...current, { name: 'MovieDetails', movieId }]);
+    scheduleNav(() => {
+      setHistory(current => [...current, { name: 'MovieDetails', movieId }]);
+    });
   };
 
   const openPostReview = (movieId: number, movieTitle: string) => {
-    setHistory(current => [...current, { name: 'PostReview', movieId, movieTitle }]);
+    scheduleNav(() => {
+      setHistory(current => [
+        ...current,
+        { name: 'PostReview', movieId, movieTitle },
+      ]);
+    });
   };
 
   const headerTitle = useMemo(() => {
@@ -140,13 +211,20 @@ const [tabHistory, setTabHistory] = useState<Array<'popular' | 'search'>>([]);
     return 'Movie Discovery';
   }, [currentRoute.name]);
 
+  const movieIdForDetails =
+    currentRoute.name === 'MovieDetails' ? currentRoute.movieId : undefined;
+  const movieIdForReview =
+    currentRoute.name === 'PostReview' ? currentRoute.movieId : undefined;
+  const movieTitleForReview =
+    currentRoute.name === 'PostReview' ? currentRoute.movieTitle : undefined;
+
 
   return (
     <View style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       {currentRoute.name !== 'Home' ? (
         <View style={styles.header}>
           <Pressable onPress={goBack} style={styles.backButton}>
-            <Text style={styles.backButtonText}>Back</Text>
+            <Text style={styles.backButtonText}>Back - {history[-1]?.name} </Text>
           </Pressable>
           <Text style={styles.headerTitle}>{headerTitle}</Text>
           <View style={styles.headerSpacer} />
@@ -154,57 +232,76 @@ const [tabHistory, setTabHistory] = useState<Array<'popular' | 'search'>>([]);
       ) : null}
 
       <View style={styles.content}>
-        {currentRoute.name === 'Home' && (
-          <HomeTabs onTabPress={handleTabPress} activeTab={activeTab}openMovie={openMovie} />
-        )}
+        <View
+          style={
+            currentRoute.name === 'Home' ? styles.visible : styles.hidden
+          }
+        >
+          <HomeTabs
+            key="home-tabs"
+            onTabPress={handleTabPress}
+            activeTab={activeTab}
+            openMovie={openMovie}
+          />
+        </View>
 
-        {currentRoute.name === 'MovieDetails' && (
+        <View
+          style={
+            currentRoute.name === 'MovieDetails' ? styles.visible : styles.hidden
+          }
+        >
           <MovieDetailsScreen
-            movieId={currentRoute.movieId}
+            key={`movie-${movieIdForDetails ?? 'none'}`}
+            movieId={movieIdForDetails}
             onWriteReview={openPostReview}
           />
-        )}
+        </View>
 
-        {currentRoute.name === 'PostReview' && (
+        <View
+          style={
+            currentRoute.name === 'PostReview' ? styles.visible : styles.hidden
+          }
+        >
           <UserReviewScreen
-            movieId={currentRoute.movieId}
-            movieTitle={currentRoute.movieTitle}
+            key={`review-${movieIdForReview ?? 'none'}`}
+            movieId={movieIdForReview}
+            movieTitle={movieTitleForReview}
             onDone={goBack}
           />
-        )}
+        </View>
       </View>
-        <NetworkPopover visible={networkVisible} onClose={() => setNetworkVisible(false)} />
+      <NetworkPopover visible={networkVisible} onClose={() => setNetworkVisible(false)} />
     </View>
   );
 };
 
-  const networkHandlers: Array<() => void> = [];
+const networkHandlers: Array<() => void> = [];
 
-  export function showNetworkPopover() {
-    networkHandlers.forEach(h => h());
-  }
+export function showNetworkPopover() {
+  networkHandlers.forEach(h => h());
+}
 
-  const NetworkPopover = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
-    return (
-      <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Can't load data?</Text>
-            <Text style={styles.modalText}>
-              If movie data isn't appearing, your network may be forcing a public DNS
-              (for example dns.google). Try switching your device to your private DNS provider.
-              See the project README for detailed steps.
-            </Text>
-            <View style={styles.modalActions}>
-              <Pressable onPress={onClose} style={styles.modalButton}>
-                <Text style={styles.modalButtonText}>Dismiss</Text>
-              </Pressable>
-            </View>
+const NetworkPopover = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
+  return (
+    <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalCard}>
+          <Text style={styles.modalTitle}>Can't load data?</Text>
+          <Text style={styles.modalText}>
+            If movie data isn't appearing, your network may be forcing a public DNS
+            (for example dns.google). Try switching your device to your private DNS provider.
+            See the project README for detailed steps.
+          </Text>
+          <View style={styles.modalActions}>
+            <Pressable onPress={onClose} style={styles.modalButton}>
+              <Text style={styles.modalButtonText}>Dismiss</Text>
+            </Pressable>
           </View>
         </View>
-      </Modal>
-    );
-  };
+      </View>
+    </Modal>
+  );
+};
 
 const styles = StyleSheet.create({
   root: {
@@ -242,6 +339,23 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  visible: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 1,
+  },
+  hidden: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0,
+    pointerEvents: 'none',
   },
   tabBar: {
     flexDirection: 'row',
