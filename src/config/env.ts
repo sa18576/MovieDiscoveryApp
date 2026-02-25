@@ -11,7 +11,6 @@ export const env = {
 };
 
 export const validateEnv = () => {
-  console.log('hello',TMDB_API_KEY)
   if (!TMDB_API_KEY) {
     return 'TMDB_API_KEY is missing. Add it to your .env file.';
   }

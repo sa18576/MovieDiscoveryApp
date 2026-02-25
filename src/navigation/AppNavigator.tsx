@@ -107,22 +107,13 @@ const AppNavigator = () => {
 
 
   const goBack = useCallback(() => {
-    console.log(
-      '[Navigation] goBack called, current route:',
-      historyRef.current[historyRef.current.length - 1].name,
-    );
 
     scheduleNav(() => {
       setHistory(current => {
         if (current.length <= 1) {
-          console.log('[Navigation] Already at root, cannot go back');
           return current;
         }
         const newHistory = current.slice(0, -1);
-        console.log(
-          '[Navigation] Completed navigation back to:',
-          newHistory[newHistory.length - 1].name,
-        );
         return newHistory;
       });
     });
@@ -132,16 +123,11 @@ const AppNavigator = () => {
     scheduleNav(() => {
       setActiveTab(current => {
         if (current === tab) {
-          console.log('[Navigation] Already on tab:', tab);
           return current;
         }
 
         setTabHistory(existing => {
           const newHistory = [...existing, current];
-          console.log(
-            '[Navigation] Pushing previous tab to history:',
-            newHistory,
-          );
           return newHistory;
         });
         return tab;
